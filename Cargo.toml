@@ -1,0 +1,18 @@
+[package]
+name = "pam_usb"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+log = "0.4.33"
+pam-sys = "0.5.6"
+rustix = { version = "1.1.4", default-features = false, features = ["mount", "system"] }
+serde = { version = "1.0.229", features = ["derive"] }
+tempfile = { version = "3.27.0", default-features = false }
+thiserror = "2.0.20"
+toml = { version = "1.1.4", default-features = false, features = ["serde", "parse"] }
+udev = { version = "0.9.3", default-features = false }
+
+[[bin]]
+name = "pam_usb_check"
+path = "src/pam_usb_check.rs"
