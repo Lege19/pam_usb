@@ -19,8 +19,14 @@ impl Key {
     pub fn zeroes() -> Self {
         Self([0; _])
     }
-    pub fn regenerate(&mut self, rng: &mut impl Rng) -> std::io::Result<()> {
-        rng.getrandom(&mut self.0)
+    pub fn regenerate_key_pair(
+        system_key: &mut Self,
+        device_key: &mut Self,
+        rng: &mut impl Rng,
+    ) -> std::io::Result<()> {
+        rng.getrandom(&mut system_key.0)?;
+        device_key.0.copy_from_slice(&system_key.0);
+        Ok(())
     }
     pub fn xor(&mut self, rhs: &Key) {
         for i in 0..KEY_LEGNTH {

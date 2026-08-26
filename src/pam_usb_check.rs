@@ -7,6 +7,7 @@ use std::{
     process::ExitCode,
 };
 
+use libc::system;
 use pam_usb::{
     key::Key,
     libc_wrappers::{self},
@@ -118,6 +119,8 @@ enum UsbCheckError {
     InvalidHostname(std::str::Utf8Error),
     #[error("Failed to mount partition: {0}")]
     MountFailed(io::Error),
+    #[error("Failed to generate new key(s): {0}")]
+    KeygenError(io::Error),
     #[error("Uncategorised io error: {0}")]
     OtherIo(#[from] io::Error),
 }
@@ -178,14 +181,23 @@ fn usb_check(
 
     let mut system_key = Key::zeroes();
     system_key
-        .read_from_file(fs, system_key_path)
+        .read_from_file(fs, system_key_path.as_path())
         .map_err(UsbCheckError::FailedToReadKey)?;
     let mut device_key = Key::zeroes();
     device_key
-        .read_from_file(fs, device_key_path)
+        .read_from_file(fs, device_key_path.as_path())
         .map_err(UsbCheckError::FailedToReadKey)?;
 
-    Ok(Key::check(&system_key, &device_key))
+    if !Key::check(&system_key, &device_key) {
+        return Ok(false);
+    }
+
+    Key::regenerate_key_pair(&mut system_key, &mut device_key, rng)
+        .map_err(UsbCheckError::KeygenError)?;
+    system_key.write_to_file(fs, system_key_path.as_path())?;
+    device_key.write_to_file(fs, device_key_path.as_path())?;
+
+    Ok(true)
 }
 
 struct Partition<'uuid> {
