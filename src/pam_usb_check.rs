@@ -7,7 +7,6 @@ use std::{
     process::ExitCode,
 };
 
-use libc::system;
 use pam_usb::{
     key::Key,
     libc_wrappers::{self},
