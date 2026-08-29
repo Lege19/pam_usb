@@ -1,3 +1,15 @@
+//! Minimal abstract IO interface
+//!
+//! This will make fuzzing/failpoint testing later much easier
+//!
+//! This is designed to be close to what pamusb needs,
+//! not close to what the underlying APIs (`std::fs`, `libc::getrandom`, `libc::mount`, etc) provide
+//! This makes more sense because e.g. testing code shouldn't have to provide a whole `Read` implementation
+//! for the sake of being more compatiable with `std::fs`.
+//!
+//! This is not abstract over `std::io::Error` though,
+//! since values of this type are easy to construct and must be handled correctly.
+
 use std::{
     ffi::{CStr, CString, NulError, OsStr},
     io::{self, Read, Write},
@@ -12,16 +24,6 @@ pub trait Rng {
     fn getrandom(&mut self, buf: &mut [u8]) -> io::Result<()>;
 }
 
-/// Minimal abstract filesystem interface
-///
-/// This will make fuzzing/failpoint testing later much easier
-///
-/// This is designed to be close to what pamusb needs,
-/// not close to what `std::fs`+`std::io` provides.
-/// This makes more sense because e.g. testing code shouldn't have to provide a whole `Read` implementation.
-///
-/// This is not abstract over `std::io::Error` though,
-/// since values of this type are easy to construct and must be handled correctly.
 pub trait Fs {
     /// Reads an entire file into a newly allocated buffer.
     /// This is expected to be used for configuration files.

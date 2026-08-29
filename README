@@ -1,0 +1,20 @@
+## Building
+The `udev` and `pam` libraries are needed at runtime.
+
+The `clang` library (as in libclang, not the clang cli) is needed at compile time for generating the pam bindings.
+
+You will probably need to set `RUSTFLAGS` to help find the dynamic libraries at runtime.
+In my case (on NixOS), it's something like:
+`-C link-args=-Wl,-rpath,.../lib,-rpath,.../lib`
+
+I also had to set `BINDGEN_EXTRA_CLANG_ARGS` to help bindgen find the pam headers,
+but I expect this is only needed on NixOS. `-I.../include -I.../include`
+
+## Compile time configuration
+Compile time configuration is done through environment variables.
+
+`PAMUSB_HOME` defaults to `/etc/security/pamusb`
+pamusb configuration files and system keys are stored in this directory
+
+`PAMUSB_CHECK_PATH` defaults to `/usr/sbin/__pamusb-check`
+This is where the pamusb-check binary should be installed to.

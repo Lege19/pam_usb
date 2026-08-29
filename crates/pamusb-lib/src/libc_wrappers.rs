@@ -116,3 +116,7 @@ pub fn getrandom_full(buffer: &mut [u8], secure: bool) -> io::Result<()> {
     }
     Ok(())
 }
+
+pub fn getuid() -> libc::uid_t {
+    unsafe { libc::getuid() }
+}

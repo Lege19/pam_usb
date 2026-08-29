@@ -1,0 +1,12 @@
+[package]
+edition = "2024"
+version = "0.1.0"
+name = "run-pamusb-check"
+
+[dependencies]
+pamusb-lib.workspace = true
+
+[build-dependencies]
+# This isn't currently used but may be in future,
+# I'm keeping it here to avoid accidental circular dependencies
+pamusb-check = {path = "../pamusb-check"}

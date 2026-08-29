@@ -1,0 +1,9 @@
+[package]
+name = "pamusb-check"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+pamusb-lib.workspace = true
+thiserror = "2.0.20"
+log.workspace = true

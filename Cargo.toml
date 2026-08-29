@@ -1,27 +1,9 @@
 [workspace]
 resolver = "3"
-members = ["pam-sys"]
+members = ["crates/*"]
+default-members = ["crates/pamusb-cli"]
 
-[package]
-name = "pam_usb"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
+[workspace.dependencies]
 log = "0.4.33"
-thiserror = "2.0.20"
-
-udev = { version = "0.9.3", default-features = false }
-
-toml = { version = "1.1.4", default-features = false, features = ["serde", "parse"] }
-serde = { version = "1.0.229", features = ["derive"] }
-
-fastrand = "2.5.0"
-
-subtle = { version = "2.6.1", default-features = false }
-zeroize = { version = "1.9.0", default-features = false }
-libc = "0.2.189"
-
-[[bin]]
-name = "pam_usb_check"
-path = "src/pam_usb_check.rs"
+pamusb-lib = {path = "crates/pamusb-lib"}
+run-pamusb-check = {path = "crates/run-pamusb-check"}

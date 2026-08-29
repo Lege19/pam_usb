@@ -1,0 +1,11 @@
+[package]
+name = "pamusb-cli"
+version = "0.1.0"
+edition = "2024"
+description = "A CLI interface to pamusb"
+
+[dependencies]
+clap = {version = "4.6.6", features = ["derive"]}
+log.workspace = true
+pamusb-lib.workspace = true
+run-pamusb-check.workspace = true
