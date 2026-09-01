@@ -5,3 +5,9 @@ edition = "2024"
 
 [lib]
 crate-type = ["cdylib"]
+
+[dependencies]
+run-pamusb-check.workspace = true
+pam-sys.path = "../pam-sys/"
+wrapper-utils.workspace = true
+pamusb-lib.workspace = true

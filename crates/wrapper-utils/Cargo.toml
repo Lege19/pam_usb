@@ -1,0 +1,7 @@
+[package]
+edition = "2024"
+version = "0.1.0"
+name = "wrapper-utils"
+
+[dependencies]
+bitflags = "2.13.1"
