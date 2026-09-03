@@ -25,42 +25,6 @@ impl Module for Pamusb {
             Err(PAM_AUTHINFO_UNAVAIL)
         }
     }
-    fn pam_sm_setcred<'a>(
-        _pamh: &mut Handle,
-        _flags: flags::Setcred,
-        _args: impl Iterator<Item = &'a std::ffi::CStr>,
-    ) -> Result<(), errors::Setcred> {
-        Ok(())
-    }
-    fn pam_sm_acct_mgmt<'a>(
-        _pamh: &mut Handle,
-        _flags: flags::AcctMgmt,
-        _args: impl Iterator<Item = &'a std::ffi::CStr>,
-    ) -> Result<(), errors::AcctMgmt> {
-        // probably safe in case of misconfiguration
-        Err(errors::AcctMgmt::PAM_PERM_DENIED)
-    }
-    fn pam_sm_open_session<'a>(
-        _pamh: &mut Handle,
-        _flags: flags::Session,
-        _args: impl Iterator<Item = &'a std::ffi::CStr>,
-    ) -> Result<(), errors::Session> {
-        Ok(())
-    }
-    fn pam_sm_close_session<'a>(
-        _pamh: &mut Handle,
-        _flags: flags::Session,
-        _args: impl Iterator<Item = &'a std::ffi::CStr>,
-    ) -> Result<(), errors::Session> {
-        Ok(())
-    }
-    fn pam_sm_chauthtok<'a>(
-        _pamh: &mut Handle,
-        _flags: flags::Chauthtok,
-        _args: impl Iterator<Item = &'a std::ffi::CStr>,
-    ) -> Result<(), errors::Chauthtok> {
-        Ok(())
-    }
 }
 
 gen_ffi!(Pamusb);

@@ -79,43 +79,56 @@ pub mod errors {
 }
 
 pub trait Module {
+    #![allow(unused)]
+
     fn pam_sm_authenticate<'a>(
         pamh: &mut Handle,
         flags: flags::Authenticate,
         args: impl Iterator<Item = &'a CStr>,
-    ) -> Result<(), errors::Authenticate>;
-
+    ) -> Result<(), errors::Authenticate> {
+        Err(errors::Authenticate::PAM_AUTH_ERR)
+    }
     fn pam_sm_setcred<'a>(
         pamh: &mut Handle,
         flags: flags::Setcred,
-        args: impl Iterator<Item = &'a CStr>,
-    ) -> Result<(), errors::Setcred>;
-
+        args: impl Iterator<Item = &'a std::ffi::CStr>,
+    ) -> Result<(), errors::Setcred> {
+        Ok(())
+    }
     fn pam_sm_acct_mgmt<'a>(
         pamh: &mut Handle,
         flags: flags::AcctMgmt,
-        args: impl Iterator<Item = &'a CStr>,
-    ) -> Result<(), errors::AcctMgmt>;
-
+        args: impl Iterator<Item = &'a std::ffi::CStr>,
+    ) -> Result<(), errors::AcctMgmt> {
+        Ok(())
+    }
     fn pam_sm_open_session<'a>(
         pamh: &mut Handle,
         flags: flags::Session,
-        args: impl Iterator<Item = &'a CStr>,
-    ) -> Result<(), errors::Session>;
-
+        args: impl Iterator<Item = &'a std::ffi::CStr>,
+    ) -> Result<(), errors::Session> {
+        Ok(())
+    }
     fn pam_sm_close_session<'a>(
         pamh: &mut Handle,
         flags: flags::Session,
-        args: impl Iterator<Item = &'a CStr>,
-    ) -> Result<(), errors::Session>;
-
+        args: impl Iterator<Item = &'a std::ffi::CStr>,
+    ) -> Result<(), errors::Session> {
+        Ok(())
+    }
     fn pam_sm_chauthtok<'a>(
-        pamh: &mut Handle,
-        flags: flags::Chauthtok,
-        args: impl Iterator<Item = &'a CStr>,
-    ) -> Result<(), errors::Chauthtok>;
+        _pamh: &mut Handle,
+        _flags: flags::Chauthtok,
+        _args: impl Iterator<Item = &'a std::ffi::CStr>,
+    ) -> Result<(), errors::Chauthtok> {
+        Ok(())
+    }
 }
 
+// The man pages do not clearly document the lifetime of the returned string.
+// I think tying this to the lifetime of the pam handle should be playing it safe,
+// since it shouldn't be possible to obtain a reference to a pam handle with a longer lifetime than
+// a call to any single pam module function.
 pub fn get_user<'a>(
     pamh: &'a mut Handle,
     prompt: Option<&CStr>,
@@ -124,8 +137,13 @@ pub fn get_user<'a>(
         let mut out: *const c_char = null();
         use std::ptr;
         let prompt = prompt.map_or_else(ptr::null, CStr::as_ptr);
+        // SAFETY: pamh is a valid pointer to a pam handle, since it came from a Rust reference.
+        // out is mutable, and is a *const c_char (the right type), and won't be accessed
+        // concurrently by other code.
         let status = unsafe { pam_sys::pam_get_user(pamh, &mut out as *mut *const c_char, prompt) };
         return match status {
+            // SAFETY: If pam_get_user succeeded, then it would have written a pointer to a
+            // c string to out.
             pam_sys::PAM_SUCCESS => Ok(Ok(unsafe { CStr::from_ptr(out) })),
             pam_sys::PAM_CONV_AGAIN => continue,
             other => other
