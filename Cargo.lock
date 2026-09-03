@@ -312,6 +312,7 @@ dependencies = [
  "subtle",
  "toml",
  "udev",
+ "wrapper-utils",
  "zeroize",
 ]
 

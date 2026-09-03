@@ -26,38 +26,38 @@ impl Module for Pamusb {
         }
     }
     fn pam_sm_setcred<'a>(
-        pamh: &mut Handle,
-        flags: flags::Setcred,
-        args: impl Iterator<Item = &'a std::ffi::CStr>,
+        _pamh: &mut Handle,
+        _flags: flags::Setcred,
+        _args: impl Iterator<Item = &'a std::ffi::CStr>,
     ) -> Result<(), errors::Setcred> {
         Ok(())
     }
     fn pam_sm_acct_mgmt<'a>(
-        pamh: &mut Handle,
-        flags: flags::AcctMgmt,
-        args: impl Iterator<Item = &'a std::ffi::CStr>,
+        _pamh: &mut Handle,
+        _flags: flags::AcctMgmt,
+        _args: impl Iterator<Item = &'a std::ffi::CStr>,
     ) -> Result<(), errors::AcctMgmt> {
         // probably safe in case of misconfiguration
         Err(errors::AcctMgmt::PAM_PERM_DENIED)
     }
     fn pam_sm_open_session<'a>(
-        pamh: &mut Handle,
-        flags: flags::Session,
-        args: impl Iterator<Item = &'a std::ffi::CStr>,
+        _pamh: &mut Handle,
+        _flags: flags::Session,
+        _args: impl Iterator<Item = &'a std::ffi::CStr>,
     ) -> Result<(), errors::Session> {
         Ok(())
     }
     fn pam_sm_close_session<'a>(
-        pamh: &mut Handle,
-        flags: flags::Session,
-        args: impl Iterator<Item = &'a std::ffi::CStr>,
+        _pamh: &mut Handle,
+        _flags: flags::Session,
+        _args: impl Iterator<Item = &'a std::ffi::CStr>,
     ) -> Result<(), errors::Session> {
         Ok(())
     }
     fn pam_sm_chauthtok<'a>(
-        pamh: &mut Handle,
-        flags: flags::Chauthtok,
-        args: impl Iterator<Item = &'a std::ffi::CStr>,
+        _pamh: &mut Handle,
+        _flags: flags::Chauthtok,
+        _args: impl Iterator<Item = &'a std::ffi::CStr>,
     ) -> Result<(), errors::Chauthtok> {
         Ok(())
     }

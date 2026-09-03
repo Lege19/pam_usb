@@ -1,5 +1,5 @@
 use std::{
-    ffi::{CStr, CString, c_char, c_int, c_ulong},
+    ffi::{CStr, CString, c_char},
     io,
     ptr::null,
 };
@@ -30,34 +30,45 @@ pub fn gethostname() -> io::Result<CString> {
     Ok(hostname.to_owned())
 }
 
-pub fn mount(source: &CStr, target: &CStr, fs_type: &CStr, flags: c_ulong) -> io::Result<()> {
-    // Annoyingly the man page didn't specify what would happen if there was an unrecognised flag,
-    // so it's technically UB, and I have to check for it myself
-    if flags
-        & !(libc::MS_DIRSYNC
-            | libc::MS_LAZYTIME
-            | libc::MS_MANDLOCK
-            | libc::MS_NOATIME
-            | libc::MS_NODEV
-            | libc::MS_NODIRATIME
-            | libc::MS_NOEXEC
-            | libc::MS_NOSUID
-            | libc::MS_RDONLY
-            | libc::MS_REC
-            | libc::MS_RELATIME
-            | libc::MS_SILENT
-            | libc::MS_STRICTATIME
-            | libc::MS_SYNCHRONOUS
-            | libc::MS_NOSYMFOLLOW
-            | libc::MS_SHARED
-            | libc::MS_PRIVATE
-            | libc::MS_SLAVE
-            | libc::MS_UNBINDABLE)
-        != 0
-    {
-        return Err(io::ErrorKind::InvalidInput.into());
-    }
+pub mod flags {
+    use libc::*;
+    wrapper_utils::decl_bitflags! {
+        repr = c_ulong;
 
+        Mount {
+            MS_DIRSYNC,
+            MS_LAZYTIME,
+            MS_MANDLOCK,
+            MS_NOATIME,
+            MS_NODEV,
+            MS_NODIRATIME,
+            MS_NOEXEC,
+            MS_NOSUID,
+            MS_RDONLY,
+            MS_REC,
+            MS_RELATIME,
+            MS_SILENT,
+            MS_STRICTATIME,
+            MS_SYNCHRONOUS,
+            MS_NOSYMFOLLOW,
+            MS_SHARED,
+            MS_PRIVATE,
+            MS_SLAVE,
+            MS_UNBINDABLE,
+        }
+    }
+    wrapper_utils::decl_bitflags! {
+        repr = c_int;
+
+        Unmount {
+            MNT_FORCE,
+            MNT_DETACH,
+            MNT_EXPIRE,
+            UMOUNT_NOFOLLOW,
+        }
+    }
+}
+pub fn mount(source: &CStr, target: &CStr, fs_type: &CStr, flags: flags::Mount) -> io::Result<()> {
     // SAFETY:
     // First 3 arguments come from &CStr, which is already guaranteed to be valid.
     // Flags might include an invalid combination, leading to EINVAL, but this is not UB.
@@ -67,7 +78,7 @@ pub fn mount(source: &CStr, target: &CStr, fs_type: &CStr, flags: c_ulong) -> io
             source.as_ptr(),
             target.as_ptr(),
             fs_type.as_ptr(),
-            flags,
+            flags.bits(),
             null(),
         )
     } {
@@ -76,11 +87,11 @@ pub fn mount(source: &CStr, target: &CStr, fs_type: &CStr, flags: c_ulong) -> io
     Ok(())
 }
 
-pub fn unmount(target: &CStr, flags: c_int) -> io::Result<()> {
+pub fn unmount(target: &CStr, flags: flags::Unmount) -> io::Result<()> {
     // SAFETY:
     // Target is guaranteed to be a valid CStr,
     // flags are allowed to be invalid, leading to EINVAL
-    if 0 != unsafe { libc::umount2(target.as_ptr(), flags) } {
+    if 0 != unsafe { libc::umount2(target.as_ptr(), flags.bits()) } {
         return Err(io::Error::last_os_error());
     }
     Ok(())
@@ -92,6 +103,8 @@ pub fn unmount(target: &CStr, flags: c_int) -> io::Result<()> {
 pub fn getrandom(buffer: &mut [u8], secure: bool) -> io::Result<usize> {
     let flags = if secure { libc::GRND_RANDOM } else { 0 };
     loop {
+        // SAFETY: buffer pointer and length are valid because they come from a Rust slice.
+        // The flags because they're just GRND_RANDOM or 0, which are both valid.
         return match unsafe { libc::getrandom(buffer.as_mut_ptr().cast(), buffer.len(), flags) } {
             -1 => {
                 let err = io::Error::last_os_error();
@@ -118,5 +131,6 @@ pub fn getrandom_full(buffer: &mut [u8], secure: bool) -> io::Result<()> {
 }
 
 pub fn getuid() -> libc::uid_t {
+    // SAFETY: getuid is always safe
     unsafe { libc::getuid() }
 }

@@ -114,26 +114,26 @@ impl LibcMount {
         std::fs::create_dir_all(target.as_path())?;
         let target = CString::new(target.into_os_string().into_vec()).map_err(nul_err_to_io_err)?;
 
-        libc_wrappers::mount(
-            source,
-            target.as_c_str(),
-            fs_type,
-            libc::MS_DIRSYNC
-                | libc::MS_SYNCHRONOUS
-                | libc::MS_NODEV
-                | libc::MS_NOEXEC
-                | libc::MS_NOSUID
-                | libc::MS_NOSYMFOLLOW,
-        )?;
+        libc_wrappers::mount(source, target.as_c_str(), fs_type, {
+            use libc_wrappers::flags::Mount;
+            Mount::MS_DIRSYNC
+                | Mount::MS_SYNCHRONOUS
+                | Mount::MS_NODEV
+                | Mount::MS_NOEXEC
+                | Mount::MS_NOSUID
+                | Mount::MS_NOSYMFOLLOW
+        })?;
 
         Ok(Self(target))
     }
 }
 impl Drop for LibcMount {
     fn drop(&mut self) {
-        if let Err(e) =
-            libc_wrappers::unmount(self.0.as_c_str(), libc::MNT_DETACH | libc::UMOUNT_NOFOLLOW)
-        {
+        if let Err(e) = libc_wrappers::unmount(
+            self.0.as_c_str(),
+            libc_wrappers::flags::Unmount::MNT_DETACH
+                | libc_wrappers::flags::Unmount::UMOUNT_NOFOLLOW,
+        ) {
             log::error!("Failed to unmount device: {}", e);
         }
         if let Err(e) = std::fs::remove_dir(self.0.as_c_str().to_str().expect(
