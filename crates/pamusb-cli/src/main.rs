@@ -11,6 +11,16 @@ struct Cli {
     command: Commands,
 }
 
+#[derive(Args)]
+#[group(multiple = false)]
+struct LogLevel {
+    /// Enable extra logging to help with debugging/setup.
+    #[arg(long, global = true)]
+    debug: bool,
+    #[arg(long, global = true)]
+    quiet: bool,
+}
+
 #[derive(Subcommand)]
 enum Commands {
     #[command(arg_required_else_help = true)]
@@ -38,16 +48,6 @@ impl Check {
             ExitCode::FAILURE
         }
     }
-}
-
-#[derive(Args)]
-#[group(multiple = false)]
-struct LogLevel {
-    /// Enable extra logging to help with debugging/setup.
-    #[arg(long)]
-    debug: bool,
-    #[arg(long)]
-    quiet: bool,
 }
 
 fn main() -> ExitCode {
